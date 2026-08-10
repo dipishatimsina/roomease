@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const propertyRoutes = require('./routes/propertyRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 
 
 // Connect to MongoDB
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/api/rooms', roomRoutes);
 
 const PORT = process.env.PORT || 5000;
 
