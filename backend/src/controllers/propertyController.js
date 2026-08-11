@@ -130,4 +130,5 @@ module.exports = {
   getPropertyById,
   updateProperty,
   deleteProperty,
+  verifyProperty,
 };
