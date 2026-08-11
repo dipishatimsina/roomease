@@ -178,6 +178,73 @@ const verifyRoom = async (req, res) => {
   }
 };
 
+const searchRooms = async (req, res) => {
+  try {
+    const {
+      location,
+      minRent,
+      maxRent,
+      roomType,
+      facilities,
+      availableOnly,
+      sortBy,
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+    const filter = { isVerified: true };
+
+    if (roomType) filter.roomType = roomType;
+
+    if (minRent || maxRent) {
+      filter.rent = {};
+      if (minRent) filter.rent.$gte = Number(minRent);
+      if (maxRent) filter.rent.$lte = Number(maxRent);
+    }
+
+    if (facilities) {
+      const facilityList = facilities.split(',').map((f) => f.trim());
+      filter.facilities = { $all: facilityList };
+    }
+
+    if (availableOnly === 'true') {
+      filter.availabilityStatus = 'available';
+    }
+
+    // If searching by location, first find matching verified properties
+    if (location) {
+      const matchingProperties = await Property.find({
+        location: { $regex: location, $options: 'i' },
+        isVerified: true,
+      }).select('_id');
+      filter.property = { $in: matchingProperties.map((p) => p._id) };
+    }
+
+    let sortOption = { createdAt: -1 };
+    if (sortBy === 'lowest') sortOption = { rent: 1 };
+    if (sortBy === 'highest') sortOption = { rent: -1 };
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const rooms = await Room.find(filter)
+      .populate('property', 'name location latitude longitude isVerified')
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Room.countDocuments(filter);
+
+    res.json({
+      results: rooms,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit)),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   getRoomsByProperty,
@@ -187,4 +254,5 @@ module.exports = {
   updateAvailability,
   deleteRoom,
   verifyRoom,
+  searchRooms,
 };
