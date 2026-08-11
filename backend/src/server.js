@@ -7,6 +7,7 @@ const propertyRoutes = require('./routes/propertyRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const inquiryRoutes = require('./routes/inquiryRoutes');
+const visitRoutes = require('./routes/visitRoutes');
 
 
 // Connect to MongoDB
@@ -29,6 +30,7 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/visits', visitRoutes);
 
 const PORT = process.env.PORT || 5000;
 
