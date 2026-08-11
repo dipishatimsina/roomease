@@ -101,7 +101,18 @@ const respondToApplication = async (req, res) => {
         { room: application.room, _id: { $ne: application._id }, status: 'pending' },
         { status: 'rejected' }
       );
+
+      // Create the ongoing tenancy record (spec section 24)
+      const Tenancy = require('../models/Tenancy');
+      await Tenancy.create({
+        owner: application.owner,
+        tenant: application.tenant,
+        room: application.room,
+        moveInDate: application.preferredMoveInDate,
+        rent: room.rent,
+      });
     } else {
+
       application.status = 'rejected';
       await application.save();
     }
