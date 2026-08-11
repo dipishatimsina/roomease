@@ -99,6 +99,31 @@ const deleteProperty = async (req, res) => {
   }
 };
 
+// @desc   Admin: verify/approve or reject a property
+// @route  PATCH /api/properties/:id/verify
+const verifyProperty = async (req, res) => {
+  try {
+    const { status } = req.body; // 'approved', 'rejected', 'suspended'
+
+    if (!['approved', 'rejected', 'suspended'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    property.status = status;
+    property.isVerified = status === 'approved';
+    await property.save();
+
+    res.json(property);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createProperty,
   getMyProperties,
