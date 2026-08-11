@@ -245,6 +245,30 @@ const searchRooms = async (req, res) => {
   }
 };
 
+// @desc   Public: get multiple rooms by IDs for comparison
+// @route  GET /api/rooms/compare?ids=id1,id2,id3
+const compareRooms = async (req, res) => {
+  try {
+    const { ids } = req.query;
+
+    if (!ids) {
+      return res.status(400).json({ message: 'ids query param is required (comma-separated)' });
+    }
+
+    const idList = ids.split(',').map((id) => id.trim());
+
+    if (idList.length < 2 || idList.length > 4) {
+      return res.status(400).json({ message: 'Provide between 2 and 4 room IDs to compare' });
+    }
+
+    const rooms = await Room.find({ _id: { $in: idList } }).populate('property', 'name location');
+
+    res.json(rooms);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   getRoomsByProperty,
@@ -255,4 +279,5 @@ module.exports = {
   deleteRoom,
   verifyRoom,
   searchRooms,
+  compareRooms,
 };

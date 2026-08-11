@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema(
     preferredLocation: {
       type: String,
     },
+    savedRooms: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room',
+      },
+    ],
     // Owner-specific
     isVerifiedOwner: {
       type: Boolean,
