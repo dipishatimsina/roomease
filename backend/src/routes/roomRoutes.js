@@ -8,6 +8,7 @@ const {
   updateRoom,
   updateAvailability,
   deleteRoom,
+  verifyRoom,
 } = require('../controllers/roomController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -17,6 +18,7 @@ router.get('/property/:propertyId', getRoomsByProperty); // public
 router.get('/:id', getRoomById); // public
 router.put('/:id', protect, authorize('owner'), updateRoom);
 router.patch('/:id/availability', protect, authorize('owner'), updateAvailability);
+router.patch('/:id/verify', protect, authorize('admin'), verifyRoom);
 router.delete('/:id', protect, authorize('owner'), deleteRoom);
 
 module.exports = router;
