@@ -158,6 +158,26 @@ const deleteRoom = async (req, res) => {
   }
 };
 
+// @desc   Admin: verify a room (makes it visible in tenant search)
+// @route  PATCH /api/rooms/:id/verify
+const verifyRoom = async (req, res) => {
+  try {
+    const { isVerified } = req.body;
+
+    const room = await Room.findById(req.params.id);
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    room.isVerified = !!isVerified;
+    await room.save();
+
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   getRoomsByProperty,
@@ -166,4 +186,5 @@ module.exports = {
   updateRoom,
   updateAvailability,
   deleteRoom,
+  verifyRoom,
 };
