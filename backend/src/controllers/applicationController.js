@@ -1,5 +1,6 @@
 const Application = require('../models/Application');
 const Room = require('../models/Room');
+const createNotification = require('../utils/createNotification');
 
 // @desc   Tenant: apply for a room
 // @route  POST /api/applications
@@ -111,10 +112,23 @@ const respondToApplication = async (req, res) => {
         moveInDate: application.preferredMoveInDate,
         rent: room.rent,
       });
-    } else {
 
+      await createNotification(
+        application.tenant,
+        'application_accepted',
+        'Your application was accepted! Congratulations.',
+        application.room
+      );
+   } else {
       application.status = 'rejected';
       await application.save();
+
+      await createNotification(
+        application.tenant,
+        'application_rejected',
+        'Your application was not accepted this time.',
+        application.room
+      );
     }
 
     res.json(application);
