@@ -15,22 +15,19 @@ const reportRoutes = require('./routes/reportRoutes');
 const tenancyRoutes = require('./routes/tenancyRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const metaRoutes = require('./routes/metaRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
-// Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Test route
 app.get('/', (req, res) => {
   res.send('RoomEase API is running...');
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/rooms', roomRoutes);
@@ -44,6 +41,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/tenancies', tenancyRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/meta', metaRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
