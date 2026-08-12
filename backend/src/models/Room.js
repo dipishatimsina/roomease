@@ -70,6 +70,10 @@ const roomSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // admin verifies before it's publicly visible
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
