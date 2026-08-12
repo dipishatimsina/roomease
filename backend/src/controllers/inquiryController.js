@@ -1,5 +1,6 @@
 const Inquiry = require('../models/Inquiry');
 const Room = require('../models/Room');
+const createNotification = require('../utils/createNotification');
 
 // @desc   Tenant: send an inquiry about a room
 // @route  POST /api/inquiries
@@ -81,6 +82,13 @@ const replyToInquiry = async (req, res) => {
     inquiry.ownerReply = ownerReply;
     inquiry.status = 'replied';
     await inquiry.save();
+
+    await createNotification(
+      inquiry.tenant,
+      'inquiry_replied',
+      `The owner replied to your inquiry.`,
+      inquiry.room
+    );
 
     res.json(inquiry);
   } catch (error) {

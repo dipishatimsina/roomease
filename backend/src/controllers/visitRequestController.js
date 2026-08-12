@@ -1,5 +1,6 @@
 const VisitRequest = require('../models/VisitRequest');
 const Room = require('../models/Room');
+const createNotification = require('../utils/createNotification');
 
 // @desc   Tenant: request a room visit
 // @route  POST /api/visits
@@ -95,6 +96,17 @@ const respondToVisitRequest = async (req, res) => {
     if (ownerNote) visit.ownerNote = ownerNote;
 
     await visit.save();
+
+    const notifType =
+      action === 'accept' ? 'visit_accepted' : action === 'reject' ? 'visit_rejected' : 'visit_rescheduled';
+    const notifMessage =
+      action === 'accept'
+        ? 'Your visit request was accepted.'
+        : action === 'reject'
+        ? 'Your visit request was rejected.'
+        : 'Your visit request was rescheduled by the owner.';
+
+    await createNotification(visit.tenant, notifType, notifMessage, visit.room);
     res.json(visit);
   } catch (error) {
     res.status(500).json({ message: error.message });
