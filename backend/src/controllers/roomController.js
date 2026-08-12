@@ -81,7 +81,12 @@ const getMyRooms = async (req, res) => {
 // @route  GET /api/rooms/:id
 const getRoomById = async (req, res) => {
   try {
-    const room = await Room.findById(req.params.id).populate('property');
+    const room = await Room.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    ).populate('property');
+
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }
