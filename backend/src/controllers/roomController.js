@@ -274,6 +274,45 @@ const compareRooms = async (req, res) => {
   }
 };
 
+// @desc   Owner: confirm a room is still available (resets outdated-listing timer)
+// @route  PATCH /api/rooms/:id/confirm
+const confirmStillAvailable = async (req, res) => {
+  try {
+    const { stillAvailable } = req.body; // true or false
+
+    const room = await Room.findById(req.params.id);
+    if (!room) return res.status(404).json({ message: 'Room not found' });
+    if (room.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    room.lastConfirmedAt = Date.now();
+    room.availabilityStatus = stillAvailable ? 'available' : 'occupied';
+    await room.save();
+
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc   Owner: get rooms that need confirmation (not confirmed in 30+ days)
+// @route  GET /api/rooms/needs-confirmation
+const getRoomsNeedingConfirmation = async (req, res) => {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const rooms = await Room.find({
+      owner: req.user._id,
+      lastConfirmedAt: { $lt: thirtyDaysAgo },
+    });
+
+    res.json(rooms);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   getRoomsByProperty,
@@ -285,4 +324,6 @@ module.exports = {
   verifyRoom,
   searchRooms,
   compareRooms,
+  confirmStillAvailable,
+  getRoomsNeedingConfirmation,
 };

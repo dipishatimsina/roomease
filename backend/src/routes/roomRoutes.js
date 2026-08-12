@@ -11,6 +11,8 @@ const {
   verifyRoom,
   searchRooms,
   compareRooms,
+  confirmStillAvailable,
+  getRoomsNeedingConfirmation,
 } = require('../controllers/roomController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -24,5 +26,7 @@ router.put('/:id', protect, authorize('owner'), updateRoom);
 router.patch('/:id/availability', protect, authorize('owner'), updateAvailability);
 router.patch('/:id/verify', protect, authorize('admin'), verifyRoom);
 router.delete('/:id', protect, authorize('owner'), deleteRoom);
+router.get('/needs-confirmation', protect, authorize('owner'), getRoomsNeedingConfirmation);
+router.patch('/:id/confirm', protect, authorize('owner'), confirmStillAvailable);
 
 module.exports = router;
