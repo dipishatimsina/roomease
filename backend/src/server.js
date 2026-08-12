@@ -14,6 +14,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const tenancyRoutes = require('./routes/tenancyRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const metaRoutes = require('./routes/metaRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -42,6 +43,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/tenancies', tenancyRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/meta', metaRoutes);
 
 const PORT = process.env.PORT || 5000;
 
