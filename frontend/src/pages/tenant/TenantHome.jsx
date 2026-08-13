@@ -200,7 +200,7 @@ function TenantHome() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {rooms.map((room) => (
-            <RoomCard key={room._id} room={room} onSave={toggleSave} isSaved={savedIds.includes(room._id)} />
+            <RoomCard key={room._id} room={room} onSave={toggleSave} isSaved={savedIds.includes(room._id)} onClick={() => navigate(`/tenant/rooms/${room._id}`)} />
           ))}
         </div>
       </div>
