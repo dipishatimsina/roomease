@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import TenantHome from './pages/tenant/TenantHome';
+import RoomDetails from './pages/tenant/RoomDetails';
 
 function App() {
   return (
@@ -20,6 +21,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="tenant">
                 <TenantHome />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tenant/rooms/:id"
+            element={
+              <ProtectedRoute allowedRole="tenant">
+                <RoomDetails />
               </ProtectedRoute>
             }
           />
