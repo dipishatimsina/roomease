@@ -4,6 +4,7 @@ import API from '../../api/axios';
 import Navbar from '../../components/Navbar';
 import RoomCard from '../../components/RoomCard';
 import loginHero from '../../assets/login-hero.jpg';
+import { useNavigate } from 'react-router-dom';
 
 const navLinks = [
   { to: '/tenant', label: 'Home' },
@@ -16,6 +17,7 @@ function TenantHome() {
   const [loading, setLoading] = useState(true);
   const [savedIds, setSavedIds] = useState([]);
   const [search, setSearch] = useState({ location: '', minRent: '', maxRent: '' });
+  const navigate = useNavigate();
 
   const fetchRooms = async (params = {}) => {
     setLoading(true);
