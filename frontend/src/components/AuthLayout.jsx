@@ -43,7 +43,7 @@ function AuthLayout({ children }) {
 
         {/* Right panel — the actual form, passed in as children */}
         <div className="hidden lg:flex items-center justify-center">
-          <div className="w-full max-w-[510px] bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/70">
+          <div className="w-full max-w-[700px] bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-11 border border-white/70">
             {children}
           </div>
         </div>
