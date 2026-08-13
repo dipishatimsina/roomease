@@ -15,9 +15,7 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,19 +36,17 @@ function Login() {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col items-center text-center mb-5">
-        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
           <Home size={22} className="text-blue-600" />
         </div>
-        <h2 className="text-lg font-bold text-gray-900">Welcome Home! 🏠</h2>
-        <p className="text-gray-500 text-xs mt-1">Sign in to your RoomEase account</p>
+        <h2 className="text-xl font-bold text-gray-900">Welcome Home! 🏠</h2>
+        <p className="text-gray-500 text-xs mt-1">Sign in to continue to RoomEase</p>
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 text-xs px-3 py-2 rounded-lg mb-3">{error}</div>
-      )}
+      {error && <div className="bg-red-50 text-red-600 text-xs px-3 py-2 rounded-lg mb-4">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <FormInput
           icon={Mail}
           label="Email address"
@@ -61,7 +57,6 @@ function Login() {
           onChange={handleChange}
           required
         />
-
         <FormInput
           icon={Lock}
           label="Password"
@@ -73,7 +68,7 @@ function Login() {
           required
           rightElement={
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
-              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           }
         />
@@ -89,13 +84,17 @@ function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2.5 text-sm transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
+          className="group w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl py-3 text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]"
         >
-          {loading ? 'Logging in...' : <>Log in <ArrowRight size={14} /></>}
+          {loading ? 'Logging in...' : (
+            <>
+              Log in <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+            </>
+          )}
         </button>
       </form>
 
-      <p className="text-xs text-gray-500 mt-5 text-center">
+      <p className="text-xs text-gray-500 mt-6 text-center">
         Don't have an account?{' '}
         <Link to="/register" className="text-blue-600 font-semibold">Register</Link>
       </p>
