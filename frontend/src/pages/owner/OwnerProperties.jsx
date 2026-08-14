@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Building2, Plus, MapPin, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Building2, Plus, MapPin, X, DoorOpen, CheckCircle2, XCircle, Settings2 } from 'lucide-react';
 import API from '../../api/axios';
 import Navbar from '../../components/Navbar';
 
@@ -14,6 +15,7 @@ const navLinks = [
 
 function OwnerProperties() {
   const [properties, setProperties] = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -21,11 +23,15 @@ function OwnerProperties() {
   });
   const [error, setError] = useState('');
 
-  const fetchProperties = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await API.get('/properties/mine');
-      setProperties(res.data);
+      const [propRes, roomRes] = await Promise.all([
+        API.get('/properties/mine'),
+        API.get('/rooms/mine'),
+      ]);
+      setProperties(propRes.data);
+      setRooms(roomRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -34,7 +40,7 @@ function OwnerProperties() {
   };
 
   useEffect(() => {
-    fetchProperties();
+    fetchData();
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,7 +52,7 @@ function OwnerProperties() {
       await API.post('/properties', form);
       setShowForm(false);
       setForm({ name: '', address: '', location: '', description: '', propertyType: '' });
-      fetchProperties();
+      fetchData();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add property');
     }
@@ -57,6 +63,15 @@ function OwnerProperties() {
     approved: 'bg-emerald-50 text-emerald-600',
     rejected: 'bg-rose-50 text-rose-600',
     suspended: 'bg-gray-100 text-gray-600',
+  };
+
+  const roomStatsFor = (propertyId) => {
+    const propertyRooms = rooms.filter((r) => r.property?._id === propertyId || r.property === propertyId);
+    return {
+      total: propertyRooms.length,
+      available: propertyRooms.filter((r) => r.availabilityStatus === 'available').length,
+      occupied: propertyRooms.filter((r) => r.availabilityStatus === 'occupied').length,
+    };
   };
 
   return (
@@ -86,7 +101,7 @@ function OwnerProperties() {
           <div className="text-center py-12 bg-white rounded-2xl border border-sky-100 mt-8">
             <Building2 size={28} className="mx-auto text-sky-100 mb-3" />
             <p className="text-gray-500 font-medium">No properties yet</p>
-            <p className="text-gray-400 text-sm mt-1 mb-5">Add your first property to start listing rooms.</p>
+            <p className="text-gray-400 text-sm mt-1 mb-5">Add your first property to start listing rooms and finding tenants.</p>
             <button
               onClick={() => setShowForm(true)}
               className="bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"
@@ -97,20 +112,47 @@ function OwnerProperties() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-8">
-          {properties.map((p) => (
-            <div key={p._id} className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-5">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                <span className={`text-[10px] px-2 py-1 rounded-full font-semibold capitalize ${statusColors[p.status]}`}>
-                  {p.status}
-                </span>
+          {properties.map((p) => {
+            const stats = roomStatsFor(p._id);
+            return (
+              <div key={p._id} className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm overflow-hidden">
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                    <span className={`text-[10px] px-2 py-1 rounded-full font-semibold capitalize ${statusColors[p.status]}`}>
+                      {p.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 flex items-center gap-1.5 mb-3">
+                    <MapPin size={12} className="text-sky-400" /> {p.location}
+                  </p>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">{p.description || 'No description added.'}</p>
+
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="text-center bg-sky-50/60 rounded-lg py-2">
+                      <p className="text-sm font-bold text-gray-900">{stats.total}</p>
+                      <p className="text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><DoorOpen size={10} /> Rooms</p>
+                    </div>
+                    <div className="text-center bg-emerald-50/60 rounded-lg py-2">
+                      <p className="text-sm font-bold text-emerald-700">{stats.available}</p>
+                      <p className="text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><CheckCircle2 size={10} /> Available</p>
+                    </div>
+                    <div className="text-center bg-rose-50/60 rounded-lg py-2">
+                      <p className="text-sm font-bold text-rose-700">{stats.occupied}</p>
+                      <p className="text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><XCircle size={10} /> Occupied</p>
+                    </div>
+                  </div>
+
+                  <Link
+                    to="/owner/rooms"
+                    className="flex items-center justify-center gap-2 w-full bg-sky-50 hover:bg-sky-100 text-sky-700 text-sm font-semibold py-2.5 rounded-xl transition"
+                  >
+                    <Settings2 size={14} /> Manage Rooms
+                  </Link>
+                </div>
               </div>
-              <p className="text-xs text-gray-500 flex items-center gap-1.5 mb-3">
-                <MapPin size={12} className="text-sky-400" /> {p.location}
-              </p>
-              <p className="text-sm text-gray-600 line-clamp-2">{p.description || 'No description added.'}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -146,6 +188,7 @@ function OwnerProperties() {
                 name="description" placeholder="Description" value={form.description} onChange={handleChange} rows={3}
                 className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-400"
               />
+              <p className="text-[11px] text-gray-400">Property photos and map location picker coming soon.</p>
               <button className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
                 Add Property
               </button>
