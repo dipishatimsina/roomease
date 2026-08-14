@@ -51,10 +51,18 @@ function Applications() {
         {loading && <p className="text-gray-400 text-sm">Loading...</p>}
 
         {!loading && applications.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-2xl border border-sky-100">
-            <FileCheck2 size={32} className="mx-auto text-sky-100 mb-3" />
+          <div className="text-center py-12 bg-white rounded-2xl border border-sky-100">
+            <FileCheck2 size={28} className="mx-auto text-sky-100 mb-3" />
             <p className="text-gray-500 font-medium">No applications yet</p>
-            <p className="text-gray-400 text-sm mt-1">Apply to a room to see its status here</p>
+            <p className="text-gray-400 text-sm mt-1 mb-5">
+              When you apply for a room, you can track your application status here.
+            </p>
+            <button
+              onClick={() => navigate('/tenant')}
+              className="bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"
+            >
+              Browse Rooms
+            </button>
           </div>
         )}
 
