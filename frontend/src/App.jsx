@@ -8,6 +8,8 @@ import TenantHome from './pages/tenant/TenantHome';
 import RoomDetails from './pages/tenant/RoomDetails';
 import SavedRooms from './pages/tenant/SavedRooms';
 import Applications from './pages/tenant/Applications';
+import OwnerDashboard from './pages/owner/OwnerDashboard';
+import OwnerProperties from './pages/owner/OwnerProperties';
 
 function App() {
   return (
@@ -22,6 +24,9 @@ function App() {
           <Route path="/tenant/rooms/:id" element={<ProtectedRoute allowedRole="tenant"><RoomDetails /></ProtectedRoute>} />
           <Route path="/tenant/saved" element={<ProtectedRoute allowedRole="tenant"><SavedRooms /></ProtectedRoute>} />
           <Route path="/tenant/applications" element={<ProtectedRoute allowedRole="tenant"><Applications /></ProtectedRoute>} />
+
+          <Route path="/owner" element={<ProtectedRoute allowedRole="owner"><OwnerDashboard /></ProtectedRoute>} />
+          <Route path="/owner/properties" element={<ProtectedRoute allowedRole="owner"><OwnerProperties /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
