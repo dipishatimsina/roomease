@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, Heart, ShieldCheck, ArrowLeft, Wallet, Droplet, Zap,
-  MessageCircle, CalendarClock, FileCheck2, Star,
+  MessageCircle, CalendarClock, FileCheck2, Star, Wifi, Car,
+  ChefHat, Bath, Home as HomeIcon,
 } from 'lucide-react';
 import API from '../../api/axios';
 import Navbar from '../../components/Navbar';
+import RoomCard from '../../components/RoomCard';
 import { getRoomImage } from '../../components/roomImages';
 
 const navLinks = [
@@ -14,12 +16,23 @@ const navLinks = [
   { to: '/tenant/applications', label: 'Applications' },
 ];
 
+const facilityIcons = {
+  'Wi-Fi': Wifi,
+  Parking: Car,
+  Furnished: HomeIcon,
+  Kitchen: ChefHat,
+  Water: Droplet,
+  'Electricity Backup': Zap,
+  Laundry: Bath,
+};
+
 function RoomDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [room, setRoom] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -37,9 +50,15 @@ function RoomDetails() {
     try {
       const res = await API.get(`/rooms/${id}`);
       setRoom(res.data);
+
       if (res.data.property?._id) {
         const revRes = await API.get(`/reviews/property/${res.data.property._id}`);
         setReviews(revRes.data);
+      }
+
+      if (res.data.property?.location) {
+        const simRes = await API.get(`/rooms?location=${encodeURIComponent(res.data.property.location)}`);
+        setSimilar(simRes.data.results.filter((r) => r._id !== id).slice(0, 3));
       }
     } catch (err) {
       console.error(err);
@@ -64,11 +83,8 @@ function RoomDetails() {
 
   const toggleSave = async () => {
     try {
-      if (isSaved) {
-        await API.delete(`/saved-rooms/${id}`);
-      } else {
-        await API.post(`/saved-rooms/${id}`);
-      }
+      if (isSaved) await API.delete(`/saved-rooms/${id}`);
+      else await API.post(`/saved-rooms/${id}`);
       setIsSaved(!isSaved);
     } catch (err) {
       console.error(err);
@@ -116,18 +132,23 @@ function RoomDetails() {
     return (
       <div className="min-h-screen bg-sky-50/40">
         <Navbar links={navLinks} />
-        <div className="max-w-5xl mx-auto px-6 py-16 text-center text-gray-400">Loading room...</div>
+        <div className="max-w-6xl mx-auto px-6 py-16 text-center text-gray-400">Loading room...</div>
       </div>
     );
   }
 
   if (!room) return null;
 
+  const totalMonthly = (room.rent || 0) + (room.waterCharge || 0) + (room.electricityCharge || 0) + (room.internetCharge || 0);
+  const isAvailable = room.availabilityStatus === 'available';
+  const lat = room.property?.latitude;
+  const lng = room.property?.longitude;
+
   return (
     <div className="min-h-screen bg-sky-50/40 pb-16">
       <Navbar links={navLinks} />
 
-      <div className="max-w-5xl mx-auto px-6 pt-6">
+      <div className="max-w-6xl mx-auto px-6 pt-6">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-sky-600 mb-4 transition"
@@ -141,11 +162,8 @@ function RoomDetails() {
           </div>
         )}
 
-        {/* Hero image — fixed height, guaranteed via inline style */}
-        <div
-          className="rounded-2xl overflow-hidden relative mb-8 shadow-sm"
-          style={{ height: '280px' }}
-        >
+        {/* Hero image */}
+        <div className="rounded-2xl overflow-hidden relative mb-6 shadow-sm" style={{ height: '320px' }}>
           <img
             src={getRoomImage(room.roomType)}
             alt={room.roomType}
@@ -164,7 +182,7 @@ function RoomDetails() {
           <div className="lg:col-span-2 space-y-5">
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <h1 className="text-2xl font-bold text-gray-900">{room.roomType}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{room.roomType} for Rent</h1>
                 {room.isVerified && (
                   <span className="flex items-center gap-1 text-xs text-sky-600 font-semibold bg-sky-50 px-2 py-1 rounded-full">
                     <ShieldCheck size={13} /> Verified
@@ -173,38 +191,69 @@ function RoomDetails() {
               </div>
               <p className="text-gray-500 flex items-center gap-1.5 text-sm">
                 <MapPin size={14} className="text-sky-400" />
-                {room.property?.name}, {room.property?.location}
+                {room.property?.name} · {room.property?.location}
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-sky-100 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Facilities</h2>
-              <div className="flex flex-wrap gap-2 mb-5">
-                {room.facilities?.length > 0 ? (
-                  room.facilities.map((f) => (
-                    <span
-                      key={f}
-                      className="text-xs bg-sky-50 text-sky-700 px-3 py-1.5 rounded-full font-medium"
-                    >
-                      {f}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-gray-400">No facilities listed</span>
+            {/* About */}
+            <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+              <h2 className="font-semibold text-gray-900 mb-3">About this property</h2>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {room.property?.description ||
+                  `Comfortable ${room.roomType.toLowerCase()} located in ${room.property?.location}, with easy access to nearby transportation, shops, and daily essentials.`}
+              </p>
+            </div>
+
+            {/* Property details — only show fields that actually exist */}
+            <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Property details</h2>
+              <div className="grid grid-cols-2 gap-y-4 text-sm">
+                <div>
+                  <p className="text-gray-400 text-xs mb-0.5">Room type</p>
+                  <p className="font-medium text-gray-800">{room.roomType}</p>
+                </div>
+                {room.roomNumber && (
+                  <div>
+                    <p className="text-gray-400 text-xs mb-0.5">Room number</p>
+                    <p className="font-medium text-gray-800">{room.roomNumber}</p>
+                  </div>
                 )}
-              </div>
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 text-sm">
-                <p className="text-gray-500">
-                  Bathroom <span className="block font-semibold text-gray-800 mt-0.5">{room.bathroomType || 'N/A'}</span>
-                </p>
-                <p className="text-gray-500">
-                  Kitchen <span className="block font-semibold text-gray-800 mt-0.5">{room.kitchenType || 'N/A'}</span>
-                </p>
+                {room.bathroomType && (
+                  <div>
+                    <p className="text-gray-400 text-xs mb-0.5">Bathroom</p>
+                    <p className="font-medium text-gray-800">{room.bathroomType}</p>
+                  </div>
+                )}
+                {room.kitchenType && (
+                  <div>
+                    <p className="text-gray-400 text-xs mb-0.5">Kitchen</p>
+                    <p className="font-medium text-gray-800">{room.kitchenType}</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-sky-100 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Financial breakdown</h2>
+            {/* Facilities */}
+            {room.facilities?.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">Facilities & amenities</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {room.facilities.map((f) => {
+                    const Icon = facilityIcons[f] || HomeIcon;
+                    return (
+                      <div key={f} className="flex items-center gap-2 bg-sky-50/60 rounded-xl px-3 py-2.5">
+                        <Icon size={16} className="text-sky-500 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 font-medium">{f}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Monthly cost */}
+            <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Monthly cost</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-500 flex items-center gap-2"><Wallet size={15} className="text-sky-400" /> Monthly rent</span>
@@ -222,34 +271,67 @@ function RoomDetails() {
                   <span className="text-gray-500 flex items-center gap-2"><Zap size={15} className="text-sky-400" /> Electricity charge</span>
                   <span className="font-semibold text-gray-900">Rs {room.electricityCharge?.toLocaleString() || 0}</span>
                 </div>
+                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                  <span className="text-gray-700 font-semibold">Estimated monthly total</span>
+                  <span className="font-bold text-sky-600 text-base">Rs {totalMonthly.toLocaleString()}</span>
+                </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-sky-100 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Reviews</h2>
-              {reviews.length === 0 && <p className="text-sm text-gray-400">No reviews yet.</p>}
-              {reviews.map((r) => (
-                <div key={r._id} className="border-b border-gray-100 last:border-0 py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm text-gray-800">{r.tenant?.fullName}</span>
-                    <span className="flex items-center gap-0.5 text-amber-500 text-xs">
-                      <Star size={12} className="fill-amber-500" /> {r.ownerRating}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">{r.comment}</p>
+            {/* Location + map */}
+            {lat && lng && (
+              <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">Location</h2>
+                <p className="text-sm text-gray-600 flex items-center gap-1.5 mb-3">
+                  <MapPin size={14} className="text-sky-400" />
+                  {room.property?.name} · {room.property?.location}
+                </p>
+                <div className="rounded-xl overflow-hidden border border-gray-100" style={{ height: '260px' }}>
+                  <iframe
+                    title="Property location"
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    src={`https://www.google.com/maps?q=${lat},${lng}&output=embed`}
+                  />
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* Reviews */}
+            <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Reviews</h2>
+              {reviews.length === 0 ? (
+                <div className="text-center py-6">
+                  <Star size={28} className="mx-auto text-sky-100 mb-2" />
+                  <p className="text-sm text-gray-500 font-medium">No reviews yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Be the first tenant to share your experience.</p>
+                </div>
+              ) : (
+                reviews.map((r) => (
+                  <div key={r._id} className="border-b border-gray-100 last:border-0 py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm text-gray-800">{r.tenant?.fullName}</span>
+                      <span className="flex items-center gap-0.5 text-amber-500 text-xs">
+                        <Star size={12} className="fill-amber-500" /> {r.ownerRating}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{r.comment}</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           {/* Right: sticky actions */}
           <div>
-            <div className="bg-white rounded-2xl border border-sky-100 p-6 sticky top-24">
+            <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6 sticky top-24">
               <p className="text-2xl font-extrabold text-sky-600 mb-1">
                 Rs {room.rent?.toLocaleString()}<span className="text-sm font-medium text-gray-400">/month</span>
               </p>
-              <p className={`text-xs font-semibold capitalize mb-5 ${room.availabilityStatus === 'available' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {room.availabilityStatus}
+              <p className={`text-xs font-semibold mb-5 flex items-center gap-1.5 ${isAvailable ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                {isAvailable ? 'Available now' : 'Currently occupied'}
               </p>
 
               <div className="space-y-2.5">
@@ -265,13 +347,14 @@ function RoomDetails() {
                 >
                   <CalendarClock size={16} /> Request Visit
                 </button>
-                <button
-                  onClick={() => setShowApply(!showApply)}
-                  disabled={room.availabilityStatus !== 'available'}
-                  className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-40 text-white font-semibold py-2.5 rounded-xl text-sm transition"
-                >
-                  <FileCheck2 size={16} /> Apply Now
-                </button>
+                {isAvailable && (
+                  <button
+                    onClick={() => setShowApply(!showApply)}
+                    className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow-sm hover:shadow-md hover:shadow-sky-500/20"
+                  >
+                    <FileCheck2 size={16} /> Apply Now
+                  </button>
+                )}
               </div>
 
               {showInquiry && (
@@ -324,6 +407,18 @@ function RoomDetails() {
             </div>
           </div>
         </div>
+
+        {/* Similar properties */}
+        {similar.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-lg font-bold text-gray-900 mb-5">Similar properties nearby</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similar.map((r) => (
+                <RoomCard key={r._id} room={r} onClick={() => navigate(`/tenant/rooms/${r._id}`)} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
