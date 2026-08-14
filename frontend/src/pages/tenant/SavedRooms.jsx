@@ -50,15 +50,25 @@ function SavedRooms() {
           <Heart size={22} className="text-sky-500" />
           <h1 className="text-2xl font-bold text-gray-900">Saved Rooms</h1>
         </div>
-        <p className="text-gray-500 text-sm mb-8">Rooms you've bookmarked to compare and revisit later</p>
+        <p className="text-gray-500 text-sm mb-8">
+          {rooms.length > 0
+            ? `${rooms.length} room${rooms.length > 1 ? 's' : ''} saved`
+            : "Rooms you've bookmarked to compare and revisit later"}
+        </p>
 
         {loading && <p className="text-gray-400 text-sm">Loading...</p>}
 
         {!loading && rooms.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-2xl border border-sky-100">
-            <Heart size={32} className="mx-auto text-sky-100 mb-3" />
+          <div className="text-center py-12 bg-white rounded-2xl border border-sky-100">
+            <Heart size={28} className="mx-auto text-sky-100 mb-3" />
             <p className="text-gray-500 font-medium">No saved rooms yet</p>
-            <p className="text-gray-400 text-sm mt-1">Tap the heart icon on any room to save it here</p>
+            <p className="text-gray-400 text-sm mt-1 mb-5">Save rooms you like to easily find them later.</p>
+            <button
+              onClick={() => navigate('/tenant')}
+              className="bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"
+            >
+              Browse Rooms
+            </button>
           </div>
         )}
 
