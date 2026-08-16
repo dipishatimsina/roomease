@@ -29,7 +29,6 @@ function App() {
           <Route path="/tenant/rooms/:id" element={<ProtectedRoute allowedRole="tenant"><RoomDetails /></ProtectedRoute>} />
           <Route path="/tenant/saved" element={<ProtectedRoute allowedRole="tenant"><SavedRooms /></ProtectedRoute>} />
           <Route path="/tenant/applications" element={<ProtectedRoute allowedRole="tenant"><Applications /></ProtectedRoute>} />
-
           <Route path="/owner" element={<ProtectedRoute allowedRole="owner"><OwnerDashboard /></ProtectedRoute>} />
           <Route path="/owner/properties" element={<ProtectedRoute allowedRole="owner"><OwnerProperties /></ProtectedRoute>} />
           <Route path="/owner/rooms" element={<ProtectedRoute allowedRole="owner"><OwnerRooms /></ProtectedRoute>} />
