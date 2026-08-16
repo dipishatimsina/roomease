@@ -124,6 +124,17 @@ const verifyProperty = async (req, res) => {
   }
 };
 
+// @desc   Admin: get all properties (any status)
+// @route  GET /api/properties
+const getAllProperties = async (req, res) => {
+  try {
+    const properties = await Property.find().populate('owner', 'fullName email isVerifiedOwner').sort({ createdAt: -1 });
+    res.json(properties);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createProperty,
   getMyProperties,
@@ -131,4 +142,5 @@ module.exports = {
   updateProperty,
   deleteProperty,
   verifyProperty,
+  getAllProperties,
 };
