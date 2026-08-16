@@ -10,6 +10,7 @@ import SavedRooms from './pages/tenant/SavedRooms';
 import Applications from './pages/tenant/Applications';
 import OwnerDashboard from './pages/owner/OwnerDashboard';
 import OwnerProperties from './pages/owner/OwnerProperties';
+import OwnerRooms from './pages/owner/OwnerRooms';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
 
           <Route path="/owner" element={<ProtectedRoute allowedRole="owner"><OwnerDashboard /></ProtectedRoute>} />
           <Route path="/owner/properties" element={<ProtectedRoute allowedRole="owner"><OwnerProperties /></ProtectedRoute>} />
+          <Route path="/owner/rooms" element={<ProtectedRoute allowedRole="owner"><OwnerRooms /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
