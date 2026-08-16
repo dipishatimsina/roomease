@@ -313,6 +313,17 @@ const getRoomsNeedingConfirmation = async (req, res) => {
   }
 };
 
+// @desc   Admin: get all rooms (any status)
+// @route  GET /api/rooms/admin/all
+const getAllRoomsForAdmin = async (req, res) => {
+  try {
+    const rooms = await Room.find().populate('property', 'name location').populate('owner', 'fullName').sort({ createdAt: -1 });
+    res.json(rooms);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   getRoomsByProperty,
@@ -326,4 +337,5 @@ module.exports = {
   compareRooms,
   confirmStillAvailable,
   getRoomsNeedingConfirmation,
+  getAllRoomsForAdmin,
 };
