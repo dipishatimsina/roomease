@@ -11,6 +11,9 @@ import Applications from './pages/tenant/Applications';
 import OwnerDashboard from './pages/owner/OwnerDashboard';
 import OwnerProperties from './pages/owner/OwnerProperties';
 import OwnerRooms from './pages/owner/OwnerRooms';
+import OwnerInquiries from './pages/owner/OwnerInquiries';
+import OwnerVisits from './pages/owner/OwnerVisits';
+import OwnerApplications from './pages/owner/OwnerApplications';
 
 function App() {
   return (
