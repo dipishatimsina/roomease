@@ -13,6 +13,7 @@ const {
   compareRooms,
   confirmStillAvailable,
   getRoomsNeedingConfirmation,
+  getAllRoomsForAdmin,
 } = require('../controllers/roomController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -22,6 +23,7 @@ router.get('/needs-confirmation', protect, authorize('owner'), getRoomsNeedingCo
 router.post('/', protect, authorize('owner'), createRoom);
 router.get('/mine', protect, authorize('owner'), getMyRooms);
 router.get('/property/:propertyId', getRoomsByProperty);
+router.get('/admin/all', protect, authorize('admin'), getAllRoomsForAdmin);
 router.get('/:id', getRoomById);
 router.put('/:id', protect, authorize('owner'), updateRoom);
 router.patch('/:id/availability', protect, authorize('owner'), updateAvailability);
