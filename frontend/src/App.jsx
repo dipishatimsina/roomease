@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import TenantHome from './pages/tenant/TenantHome';
@@ -14,6 +13,8 @@ import OwnerRooms from './pages/owner/OwnerRooms';
 import OwnerInquiries from './pages/owner/OwnerInquiries';
 import OwnerVisits from './pages/owner/OwnerVisits';
 import OwnerApplications from './pages/owner/OwnerApplications';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminVerification from './pages/admin/AdminVerification';
 
 function App() {
   return (
@@ -35,6 +36,8 @@ function App() {
           <Route path="/owner/inquiries" element={<ProtectedRoute allowedRole="owner"><OwnerInquiries /></ProtectedRoute>} />
           <Route path="/owner/visits" element={<ProtectedRoute allowedRole="owner"><OwnerVisits /></ProtectedRoute>} />
           <Route path="/owner/applications" element={<ProtectedRoute allowedRole="owner"><OwnerApplications /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/verification" element={<ProtectedRoute allowedRole="admin"><AdminVerification /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
