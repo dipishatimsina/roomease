@@ -32,6 +32,9 @@ function App() {
           <Route path="/owner" element={<ProtectedRoute allowedRole="owner"><OwnerDashboard /></ProtectedRoute>} />
           <Route path="/owner/properties" element={<ProtectedRoute allowedRole="owner"><OwnerProperties /></ProtectedRoute>} />
           <Route path="/owner/rooms" element={<ProtectedRoute allowedRole="owner"><OwnerRooms /></ProtectedRoute>} />
+          <Route path="/owner/inquiries" element={<ProtectedRoute allowedRole="owner"><OwnerInquiries /></ProtectedRoute>} />
+          <Route path="/owner/visits" element={<ProtectedRoute allowedRole="owner"><OwnerVisits /></ProtectedRoute>} />
+          <Route path="/owner/applications" element={<ProtectedRoute allowedRole="owner"><OwnerApplications /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
