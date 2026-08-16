@@ -53,4 +53,15 @@ const getStats = async (req, res) => {
   }
 };
 
-module.exports = { verifyOwner, getStats };
+// @desc   Admin: get all owners (for verification list)
+// @route  GET /api/admin/owners
+const getAllOwners = async (req, res) => {
+  try {
+    const owners = await User.find({ role: 'owner' }).select('-password').sort({ createdAt: -1 });
+    res.json(owners);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { verifyOwner, getStats, getAllOwners };
