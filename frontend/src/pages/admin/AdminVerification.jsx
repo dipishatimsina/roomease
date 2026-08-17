@@ -1,35 +1,54 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Building2, DoorOpen, Users, Check, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Users, Building2, DoorOpen, TrendingUp, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
 import API from '../../api/axios';
-import Navbar from '../../components/Navbar';
+import AdminSidebar from '../../components/AdminSidebar';
 
-const navLinks = [
-  { to: '/admin', label: 'Dashboard' },
-  { to: '/admin/verification', label: 'Verification' },
-  { to: '/admin/reports', label: 'Reports' },
-  { to: '/admin/meta', label: 'Locations & Facilities' },
-];
+function KpiCard({ icon: Icon, label, value, sub, tone }) {
+  const tones = {
+    blue: 'bg-sky-50 text-sky-600',
+    green: 'bg-emerald-50 text-emerald-600',
+  };
+  return (
+    <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${tones[tone]}`}>
+        <Icon size={18} />
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      {sub && <p className="text-[11px] text-gray-400 mt-1">{sub}</p>}
+    </div>
+  );
+}
 
-const tabs = ['Owners', 'Properties', 'Rooms'];
+function timeAgo(date) {
+  const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+  return `${Math.floor(diff / 86400)} day${Math.floor(diff / 86400) > 1 ? 's' : ''} ago`;
+}
 
-function AdminVerification() {
-  const [activeTab, setActiveTab] = useState('Owners');
-  const [owners, setOwners] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [rooms, setRooms] = useState([]);
+function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [pendingProperties, setPendingProperties] = useState([]);
+  const [pendingOwnersCount, setPendingOwnersCount] = useState(0);
+  const [pendingRoomsCount, setPendingRoomsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchAll = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const [ownerRes, propRes, roomRes] = await Promise.all([
-        API.get('/admin/owners'),
+      const [statsRes, propRes, ownerRes, roomRes] = await Promise.all([
+        API.get('/admin/stats'),
         API.get('/properties'),
+        API.get('/admin/owners'),
         API.get('/rooms/admin/all'),
       ]);
-      setOwners(ownerRes.data);
-      setProperties(propRes.data);
-      setRooms(roomRes.data);
+      setStats(statsRes.data);
+      setPendingProperties(propRes.data.filter((p) => p.status === 'pending'));
+      setPendingOwnersCount(ownerRes.data.filter((o) => !o.isVerifiedOwner).length);
+      setPendingRoomsCount(roomRes.data.filter((r) => !r.isVerified).length);
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,169 +57,126 @@ function AdminVerification() {
   };
 
   useEffect(() => {
-    fetchAll();
+    fetchData();
   }, []);
 
-  const verifyOwner = async (id) => {
-    try {
-      await API.patch(`/admin/verify-owner/${id}`);
-      fetchAll();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const setPropertyStatus = async (id, status) => {
-    try {
-      await API.patch(`/properties/${id}/verify`, { status });
-      fetchAll();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const setRoomVerified = async (id, isVerified) => {
-    try {
-      await API.patch(`/rooms/${id}/verify`, { isVerified });
-      fetchAll();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const pendingOwners = owners.filter((o) => !o.isVerifiedOwner);
-  const pendingProperties = properties.filter((p) => p.status === 'pending');
-  const pendingRooms = rooms.filter((r) => !r.isVerified);
+  const totalPending = pendingProperties.length + pendingOwnersCount + pendingRoomsCount;
+  const occupancyRate = stats?.totalRooms ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-sky-50/40">
-      <Navbar links={navLinks} />
+    <div className="min-h-screen flex" style={{ backgroundColor: '#F7FAFC' }}>
+      <AdminSidebar pendingCount={totalPending} />
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="flex items-center gap-2 mb-1">
-          <ShieldCheck size={22} className="text-sky-500" />
-          <h1 className="text-2xl font-bold text-gray-900">Verification</h1>
-        </div>
-        <p className="text-gray-500 text-sm mb-6">Approve owners, properties, and rooms before they go live</p>
-
-        {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-xl border border-[#E5EEF7] p-1 mb-6 w-fit">
-          {tabs.map((tab) => {
-            const count = tab === 'Owners' ? pendingOwners.length : tab === 'Properties' ? pendingProperties.length : pendingRooms.length;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition ${
-                  activeTab === tab ? 'bg-sky-50 text-sky-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab}
-                {count > 0 && (
-                  <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold">{count}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex-1 px-8 py-10 max-w-6xl">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Good day, Admin 👋</h1>
+        <p className="text-gray-500 text-sm mb-8">Here's what's happening with RoomEase today.</p>
 
         {loading && <p className="text-gray-400 text-sm">Loading...</p>}
 
-        {/* Owners tab */}
-        {!loading && activeTab === 'Owners' && (
-          <div className="space-y-3">
-            {pendingOwners.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-2xl border border-sky-100">
-                <Users size={28} className="mx-auto text-sky-100 mb-3" />
-                <p className="text-gray-500 font-medium">No owners pending verification</p>
-              </div>
-            )}
-            {pendingOwners.map((o) => (
-              <div key={o._id} className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-5 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-gray-900">{o.fullName}</p>
-                  <p className="text-xs text-gray-400">{o.email} · {o.phone}</p>
-                </div>
-                <button
-                  onClick={() => verifyOwner(o._id)}
-                  className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-lg transition"
-                >
-                  <Check size={14} /> Approve
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        {stats && (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <KpiCard
+                icon={Users}
+                label="Total Users"
+                value={stats.totalUsers}
+                sub={`${stats.totalTenants} tenants · ${stats.totalOwners} owners`}
+                tone="blue"
+              />
+              <KpiCard
+                icon={Building2}
+                label="Properties"
+                value={stats.totalProperties}
+                sub={pendingProperties.length > 0 ? `${pendingProperties.length} awaiting verification` : 'All verified'}
+                tone="blue"
+              />
+              <KpiCard
+                icon={DoorOpen}
+                label="Total Rooms"
+                value={stats.totalRooms}
+                sub={`${stats.availableRooms} available · ${stats.occupiedRooms} occupied`}
+                tone="blue"
+              />
+              <KpiCard
+                icon={TrendingUp}
+                label="Occupancy Rate"
+                value={`${occupancyRate}%`}
+                sub={`${stats.occupiedRooms} of ${stats.totalRooms} rooms occupied`}
+                tone="green"
+              />
+            </div>
 
-        {/* Properties tab */}
-        {!loading && activeTab === 'Properties' && (
-          <div className="space-y-3">
-            {pendingProperties.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-2xl border border-sky-100">
-                <Building2 size={28} className="mx-auto text-sky-100 mb-3" />
-                <p className="text-gray-500 font-medium">No properties pending verification</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-amber-500" /> Needs your attention
+                  </h2>
+                  {totalPending > 0 && (
+                    <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">{totalPending}</span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mb-4">Items waiting on your review</p>
+
+                {pendingProperties.length === 0 ? (
+                  <p className="text-sm text-gray-400 py-4">Nothing pending — all caught up.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingProperties.slice(0, 4).map((p) => (
+                      <div key={p._id} className="flex items-center justify-between bg-sky-50/40 rounded-xl p-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{p.name}</p>
+                          <p className="text-xs text-gray-400 flex items-center gap-1">
+                            Submitted by {p.owner?.fullName} · <Clock size={10} /> {timeAgo(p.createdAt)}
+                          </p>
+                        </div>
+                        <Link
+                          to="/admin/verification"
+                          className="flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg"
+                        >
+                          Review <ArrowRight size={12} />
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Link to="/admin/verification" className="text-xs text-sky-600 font-semibold flex items-center gap-1 mt-4">
+                  View all verification requests <ArrowRight size={12} />
+                </Link>
               </div>
-            )}
-            {pendingProperties.map((p) => (
-              <div key={p._id} className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-semibold text-gray-900">{p.name}</p>
-                    <p className="text-xs text-gray-400">Owner: {p.owner?.fullName}</p>
+
+              <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">Room Availability</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Available</span>
+                    <span className="font-semibold text-emerald-600">{stats.availableRooms}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className="bg-emerald-500 h-2 rounded-full transition-all"
+                      style={{ width: `${stats.totalRooms ? (stats.availableRooms / stats.totalRooms) * 100 : 0}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-sm pt-2">
+                    <span className="text-gray-600">Occupied</span>
+                    <span className="font-semibold text-sky-600">{stats.occupiedRooms}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className="bg-sky-500 h-2 rounded-full transition-all"
+                      style={{ width: `${stats.totalRooms ? (stats.occupiedRooms / stats.totalRooms) * 100 : 0}%` }}
+                    />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 flex items-center gap-1.5 mb-2">
-                  <MapPin size={12} className="text-sky-400" /> {p.address}, {p.location}
-                </p>
-                <p className="text-sm text-gray-600 mb-4">{p.description}</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPropertyStatus(p._id, 'approved')}
-                    className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-lg transition"
-                  >
-                    <Check size={14} /> Approve
-                  </button>
-                  <button
-                    onClick={() => setPropertyStatus(p._id, 'rejected')}
-                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-semibold px-4 py-2 rounded-lg transition"
-                  >
-                    Reject
-                  </button>
-                </div>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Rooms tab */}
-        {!loading && activeTab === 'Rooms' && (
-          <div className="space-y-3">
-            {pendingRooms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-2xl border border-sky-100">
-                <DoorOpen size={28} className="mx-auto text-sky-100 mb-3" />
-                <p className="text-gray-500 font-medium">No rooms pending verification</p>
-              </div>
-            )}
-            {pendingRooms.map((r) => (
-              <div key={r._id} className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-5 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-gray-900">{r.roomType} — Room {r.roomNumber}</p>
-                  <p className="text-xs text-gray-400">{r.property?.name} · {r.property?.location} · Owner: {r.owner?.fullName}</p>
-                  <p className="text-sm text-sky-600 font-semibold mt-1">Rs {r.rent?.toLocaleString()}/month</p>
-                </div>
-                <button
-                  onClick={() => setRoomVerified(r._id, true)}
-                  className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-lg transition"
-                >
-                  <Check size={14} /> Verify
-                </button>
-              </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-export default AdminVerification;
+export default AdminDashboard;
