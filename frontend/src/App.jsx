@@ -15,6 +15,8 @@ import OwnerVisits from './pages/owner/OwnerVisits';
 import OwnerApplications from './pages/owner/OwnerApplications';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminVerification from './pages/admin/AdminVerification';
+import AdminReports from './pages/admin/AdminReports';
+import AdminMeta from './pages/admin/AdminMeta';
 
 function App() {
   return (
