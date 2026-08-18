@@ -29,7 +29,6 @@ const facilityIcons = {
 function RoomDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [room, setRoom] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [similar, setSimilar] = useState([]);
