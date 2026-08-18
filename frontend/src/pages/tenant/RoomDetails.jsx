@@ -35,7 +35,6 @@ function RoomDetails() {
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
-
   const [showInquiry, setShowInquiry] = useState(false);
   const [showVisit, setShowVisit] = useState(false);
   const [showApply, setShowApply] = useState(false);
