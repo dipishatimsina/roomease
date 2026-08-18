@@ -39,6 +39,8 @@ function App() {
           <Route path="/owner/applications" element={<ProtectedRoute allowedRole="owner"><OwnerApplications /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/verification" element={<ProtectedRoute allowedRole="admin"><AdminVerification /></ProtectedRoute>} />
+          <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><AdminReports /></ProtectedRoute>} />
+          <Route path="/admin/meta" element={<ProtectedRoute allowedRole="admin"><AdminMeta /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
