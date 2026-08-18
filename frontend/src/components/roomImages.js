@@ -9,4 +9,4 @@ export const roomTypeImages = {
 };
 
 export const getRoomImage = (roomType) =>
-  roomTypeImages[roomType] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop';
+  roomTypeImages[roomType] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop'; 
