@@ -156,7 +156,7 @@ function AdminReports() {
               <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900">Rooms by Type</h2>
-                  <Link to="/owner/rooms" className="text-xs text-sky-600 font-semibold flex items-center gap-1">
+                  <Link to="/admin/verification" className="text-xs text-sky-600 font-semibold flex items-center gap-1">
                     View details <ArrowRight size={12} />
                   </Link>
                 </div>
