@@ -265,7 +265,7 @@ function AdminMeta() {
               )}
             </div>
 
-            {/* Facilities */}
+            {/* Facilities all*/}
             <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2">
