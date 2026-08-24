@@ -321,7 +321,7 @@ function RoomDetails() {
             </div>
           </div>
 
-          {/* Right: sticky actions */}
+          {/* Right: sticky actions for right */}
           <div>
             <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6 sticky top-24">
               <p className="text-2xl font-extrabold text-sky-600 mb-1">
