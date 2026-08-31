@@ -249,7 +249,7 @@ function RoomDetails() {
               </div>
             )}
 
-            {/* Monthly costs */}
+           [ {/* Monthly costs */}]
             <div className="bg-white rounded-2xl border border-[#E5EEF7] shadow-sm p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Monthly cost</h2>
               <div className="space-y-3 text-sm">
